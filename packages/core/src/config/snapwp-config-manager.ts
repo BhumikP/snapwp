@@ -33,6 +33,8 @@ export interface SnapWPConfig {
 	 * Flag to enable cors middleware which proxies assets from WP server.
 	 */
 	useCorsProxy?: boolean;
+
+	parserOptions?: any;
 }
 
 /**
@@ -55,6 +57,7 @@ const defaultConfig: SnapWPConfig = {
 	restUrlPrefix: '/wp-json',
 	useCorsProxy: false,
 	corsProxyPrefix: '/proxy',
+	parserOptions: {},
 };
 
 /**

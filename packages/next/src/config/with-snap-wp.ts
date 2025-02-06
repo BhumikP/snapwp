@@ -75,11 +75,13 @@ const modifyWebpackConfig = ( snapWPConfigPath: string ) => {
  * @return The extended configuration object.
  */
 const withSnapWP = async ( nextConfig?: NextConfig ): Promise< NextConfig > => {
+	// eslint-disable-next-line no-console
+	console.log( 'process.cwd()', process.cwd() );
 	const possibleSnapWPConfigPaths = [
-		process.cwd() + '/snapwp.config.js',
-		process.cwd() + '/snapwp.config.mjs',
+		process.cwd() + '/src/snapwp.config.mjs',
 	];
-
+	// eslint-disable-next-line no-console
+	console.log( { possibleSnapWPConfigPaths } );
 	// Locate the SnapWP configuration file.
 	const snapWPConfigPath = possibleSnapWPConfigPaths.find( ( path ) => {
 		return fs.existsSync( path );
@@ -89,7 +91,9 @@ const withSnapWP = async ( nextConfig?: NextConfig ): Promise< NextConfig > => {
 		throw new Error( 'SnapWP configuration file not found.' );
 	}
 
-	const snapWPConfig = ( await import( snapWPConfigPath ) ).default;
+	const snapWPConfig = require( snapWPConfigPath ).default;
+	// eslint-disable-next-line no-console
+	console.log( 'snapWPConfig', snapWPConfig );
 	setConfig( snapWPConfig );
 	const homeUrl = new URL( getConfig().homeUrl );
 

@@ -1,25 +1,16 @@
-import React from 'react';
+import {
+	getImageSizeFromAttributes,
+	getStyleObjectFromString,
+} from '@snapwp/core';
+import { Image, Link } from '@snapwp/next';
 import Parser, {
 	domToReact,
 	Element,
 	type DOMNode,
 	type HTMLReactParserOptions,
 } from 'html-react-parser';
-import {
-	getStyleObjectFromString,
-	getImageSizeFromAttributes,
-} from '@snapwp/core';
-import Image from '@/components/image';
-import Link from '@/components/link';
-import { getConfig } from '@snapwp/core/config';
 
-const options: HTMLReactParserOptions = {
-	/**
-	 * Replaces anchor tags with Next.js Link components.
-	 *
-	 * @param domNode - The DOM node being processed.
-	 * @return A React element if the node is an anchor tag, otherwise undefined.
-	 */
+export const parserOptionsConfig: HTMLReactParserOptions = {
 	replace: ( domNode ) => {
 		if ( domNode instanceof Element ) {
 			const { attribs, children, name, type } = domNode;
@@ -35,9 +26,13 @@ const options: HTMLReactParserOptions = {
 						{ ...attributes }
 						href={ href }
 						style={ styleObject }
-						className={ className }
+						className={ className + 'test filed' }
+						// ariaLbel="text"
 					>
-						{ domToReact( children as DOMNode[], options ) }
+						{ domToReact(
+							children as DOMNode[],
+							parserOptionsConfig
+						) }
 					</Link>
 				);
 			} else if ( type === 'tag' && name === 'img' ) {
@@ -89,22 +84,3 @@ const options: HTMLReactParserOptions = {
 		return undefined;
 	},
 };
-
-/**
- * Parses HTML string into React components.
- *
- * @param props - The props for the parser.
- * @param props.html - The HTML string to parse and render.
- * @return The rendered React components.
- */
-export default function Parse( { html }: { html: string } ) {
-	const { parserOptions }: { parserOptions: HTMLReactParserOptions } =
-		getConfig();
-	// eslint-disable-next-line no-console
-	console.log( 'parserOptions', parserOptions );
-	const parseOptions = {
-		...options,
-		...parserOptions,
-	};
-	return <>{ Parser( html, parseOptions ) }</>;
-}
