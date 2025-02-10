@@ -1,6 +1,6 @@
 import { TemplateRenderer } from '@snapwp/next';
 import { EditorBlocksRenderer } from '@snapwp/blocks';
-
+import React from 'react';
 /**
  * @todo Add an example of progressively overloading block definitions, e.g.:
  *

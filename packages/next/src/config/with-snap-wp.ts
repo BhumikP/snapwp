@@ -1,5 +1,6 @@
 import { type NextConfig } from 'next';
 import fs from 'fs';
+import path from 'path';
 import { getConfig, setConfig } from '@snapwp/core/config';
 import {
 	ModifySourcePlugin,
@@ -26,6 +27,22 @@ const modifyWebpackConfig = ( snapWPConfigPath: string ) => {
 			import __snapWPConfig from '${ snapWPConfigPath }';
 		`;
 
+		// Transpile snapwp.config.ts
+		//transpile tsx files also to support snapwp.config.tsx
+		config.module.rules.push( {
+			test: /\.ts$/,
+			// include: [
+			// 	path.resolve( process.cwd(), 'snapwp.config.ts' ), // Explicitly transpile this file
+			// ],
+			use: [
+				{
+					loader: 'ts-loader',
+					options: {
+						transpileOnly: true, // Skip type checking for faster builds
+					},
+				},
+			],
+		} );
 		config.plugins.push(
 			new ModifySourcePlugin( {
 				rules: [
@@ -78,13 +95,15 @@ const withSnapWP = async ( nextConfig?: NextConfig ): Promise< NextConfig > => {
 	// eslint-disable-next-line no-console
 	console.log( 'process.cwd()', process.cwd() );
 	const possibleSnapWPConfigPaths = [
-		process.cwd() + '/src/snapwp.config.mjs',
+		process.cwd() + '/snapwp.config.ts',
+		process.cwd() + '/snapwp.config.js',
+		process.cwd() + '/snapwp.config.mjs',
 	];
 	// eslint-disable-next-line no-console
 	console.log( { possibleSnapWPConfigPaths } );
 	// Locate the SnapWP configuration file.
-	const snapWPConfigPath = possibleSnapWPConfigPaths.find( ( path ) => {
-		return fs.existsSync( path );
+	const snapWPConfigPath = possibleSnapWPConfigPaths.find( ( paths ) => {
+		return fs.existsSync( paths );
 	} );
 
 	if ( ! snapWPConfigPath ) {
@@ -92,8 +111,6 @@ const withSnapWP = async ( nextConfig?: NextConfig ): Promise< NextConfig > => {
 	}
 
 	const snapWPConfig = require( snapWPConfigPath ).default;
-	// eslint-disable-next-line no-console
-	console.log( 'snapWPConfig', snapWPConfig );
 	setConfig( snapWPConfig );
 	const homeUrl = new URL( getConfig().homeUrl );
 
