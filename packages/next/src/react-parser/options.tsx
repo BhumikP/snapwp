@@ -12,79 +12,90 @@ import {
 import Image from '@/components/image';
 import Link from '@/components/link';
 
-export const defaultOptions: HTMLReactParserOptions = {
-	/**
-	 * Replaces anchor tags with Next.js Link components.
-	 *
-	 * @param domNode - The DOM node being processed.
-	 * @return A React element if the node is an anchor tag, otherwise undefined.
-	 */
-	replace: ( domNode ) => {
-		if ( domNode instanceof Element ) {
-			const { attribs, children, name, type } = domNode;
-			const { class: className, style, ...attributes } = attribs;
-			const { href } = attribs;
-			const styleObject = style
-				? getStyleObjectFromString( style )
-				: undefined;
+/**
+ * Default options for the HTML React parser.
+ *
+ * @return The default options for the HTML React parser.
+ */
+export const defaultOptions = (): HTMLReactParserOptions => {
+	return {
+		/**
+		 * Replaces anchor tags with Next.js Link components.
+		 *
+		 * @param domNode - The DOM node being processed.
+		 * @return A React element if the node is an anchor tag, otherwise undefined.
+		 */
+		replace: ( domNode ) => {
+			if ( domNode instanceof Element ) {
+				const { attribs, children, name, type } = domNode;
+				const { class: className, style, ...attributes } = attribs;
+				const { href } = attribs;
+				const styleObject = style
+					? getStyleObjectFromString( style )
+					: undefined;
 
-			if ( type === 'tag' && name === 'a' ) {
-				return (
-					<Link
-						{ ...attributes }
-						href={ href }
-						style={ styleObject }
-						className={ className }
-					>
-						{ domToReact( children as DOMNode[], defaultOptions ) }
-					</Link>
-				);
-			} else if ( type === 'tag' && name === 'img' ) {
-				const { width, height } = getImageSizeFromAttributes( attribs );
+				if ( type === 'tag' && name === 'a' ) {
+					return (
+						<Link
+							{ ...attributes }
+							href={ href }
+							style={ styleObject }
+							className={ className }
+						>
+							{ domToReact(
+								children as DOMNode[],
+								defaultOptions()
+							) }
+						</Link>
+					);
+				} else if ( type === 'tag' && name === 'img' ) {
+					const { width, height } =
+						getImageSizeFromAttributes( attribs );
 
-				const imageAttributes = {
-					id: attribs.id,
-					mediaDetails: {
-						width,
-						height,
-					},
-				};
+					const imageAttributes = {
+						id: attribs.id,
+						mediaDetails: {
+							width,
+							height,
+						},
+					};
 
-				const shouldFill =
-					! width &&
-					! height &&
-					undefined !== width &&
-					undefined !== height;
+					const shouldFill =
+						! width &&
+						! height &&
+						undefined !== width &&
+						undefined !== height;
 
-				// srcset should be srcSet
-				if ( attributes.srcset ) {
-					attributes.srcSet = attributes.srcset;
-					delete attributes.srcset;
+					// srcset should be srcSet
+					if ( attributes.srcset ) {
+						attributes.srcSet = attributes.srcset;
+						delete attributes.srcset;
+					}
+
+					if ( attributes.fetchpriority ) {
+						attributes.fetchPriority = attributes.fetchpriority;
+						delete attributes.fetchpriority;
+					}
+
+					return (
+						<Image
+							{ ...attributes }
+							src={ attribs.src }
+							alt={ attribs.alt || '' }
+							height={ height }
+							width={ width }
+							className={ className }
+							fill={ shouldFill }
+							style={ styleObject }
+							image={ imageAttributes }
+						/>
+					);
 				}
 
-				if ( attributes.fetchpriority ) {
-					attributes.fetchPriority = attributes.fetchpriority;
-					delete attributes.fetchpriority;
-				}
-
-				return (
-					<Image
-						{ ...attributes }
-						src={ attribs.src }
-						alt={ attribs.alt || '' }
-						height={ height }
-						width={ width }
-						className={ className }
-						fill={ shouldFill }
-						style={ styleObject }
-						image={ imageAttributes }
-					/>
-				);
+				return undefined;
 			}
 
 			return undefined;
-		}
-
-		return undefined;
-	},
+		},
+	};
 };
